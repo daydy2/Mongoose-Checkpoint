@@ -26,6 +26,16 @@ router.post("/findbyid", postController.findById);
 
 router.post("/findone", postController.findOne);
 
+router.post("/updateone/:personId", postController.postFindAndUpdate);
+
+router.post("/updateone", postController.postFindOneAndUpdate);
+
+router.get("/deletebyid/:personId", postController.postFindAndDelete);
+
 router.get("/:name", postController.findPerson);
+
+router.post("/remove", postController.postRemove);
+
+router.post("/chainsearch", postController.postChainSearchQuery);
 
 module.exports = router;

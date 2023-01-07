@@ -2,7 +2,7 @@ const Person = require("../models/Person");
 
 //Create and Save a Record of a Model:
 exports.postInfoPerson = (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   const name = req.body.name;
   const age = req.body.age;
   const favoriteFood = req.body.favoritefood;
@@ -65,11 +65,73 @@ exports.findById = (req, res, next) => {
 //Use model.findOne() to Return a Single Matching Document from Your Database
 exports.findOne = (req, res, next) => {
   const searchItem = req.body.food;
-  Person.findOne({ favoritefood: { $all: searchItem} }, (err, result) => {
+  Person.findOne({ favoritefood: { $all: searchItem } }, (err, result) => {
     if (err) {
       res.status(400).json({ message: err });
     } else {
       res.status(200).json(result);
     }
   });
+};
+
+//Perform Classic Updates by Running Find, Edit, then Save
+exports.postFindAndUpdate = (req, res, next) => {
+  const personId = req.params.personId;
+  const newFood = req.body.newFood;
+  Person.findById(personId)
+    .then((person) => {
+      person.favoritefood.push(newFood);
+      return person.save();
+    })
+    .then((result) => res.status(200).json(result))
+    .catch((err) => res.status(400).json({ message: err }));
+};
+
+//Perform New Updates on a Document Using model.findOneAndUpdate()
+exports.postFindOneAndUpdate = (req, res, next) => {
+  const name = req.body.name;
+  const age = req.body.age;
+  Person.findOneAndUpdate({ name: name }, { $set: { age: age } }, { new: true })
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => res.status(400).json({ message: err }));
+};
+
+//Delete One Document Using model.findByIdAndRemove
+exports.postFindAndDelete = (req, res, next) => {
+  const personId = req.params.personId;
+  Person.findByIdAndDelete(personId, (err, data) => {
+    if (err) {
+      res.status(400).json({ message: err });
+    } else {
+      res.status(200).json(data);
+    }
+  });
+};
+
+//MongoDB and Mongoose - Delete Many Documents with model.remove()
+exports.postRemove = (req, res, next) => {
+  const nameToRemove = req.body.name;
+  Person.remove({ name: nameToRemove }, (err, result) => {
+    if (err) {
+      res.status(400).json({ message: err });
+    } else {
+      res.status(200).json(result);
+    }
+  });
+};
+
+//Chain Search Query Helpers to Narrow Search Results
+exports.postChainSearchQuery = (req, res, next) => {
+  const searchQuery = req.body.searchQuery;
+  Person.find({ favoritefood: { $all: searchQuery } })
+    .sort({ name: 1 })
+    .limit(2)
+    .select({ age: 0 })
+    .then((result) => {
+      res.status(200).json(result);
+    }).catch(err => {
+      res.status(400).json({ message: err });
+    });
 };
